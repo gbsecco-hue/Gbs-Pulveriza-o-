@@ -446,13 +446,22 @@ async function loadProducts(){
     $('s_product').innerHTML=o;
     $('m_product').innerHTML=o;
 
-    table('productsList',
-      ['Produto','Categoria','Unidade','Estoque','Mínimo','Custo unitário'],
-      products.map(x=>[
-        x.name,x.category,x.unit,x.current_stock,
-        x.minimum_stock,money(x.unit_cost)
-      ])
-    );
+    $('productsList').innerHTML=
+      '<table><thead><tr>'+
+      ['Produto','Categoria','Unidade','Estoque','Mínimo','Custo unitário','Ações']
+      .map(x=>'<th>'+x+'</th>').join('')+
+      '</tr></thead><tbody>'+
+      products.map(x=>`<tr>
+        <td>${esc(x.name)}</td>
+        <td>${esc(x.category)}</td>
+        <td>${esc(x.unit)}</td>
+        <td>${esc(x.current_stock)}</td>
+        <td>${esc(x.minimum_stock)}</td>
+        <td>${money(x.unit_cost)}</td>
+        <td><button class="secondary" onclick="editProduct('${x.id}')">Editar</button></td>
+      </tr>`).join('')+
+      '</tbody></table>';
+
   }catch(e){
     notice('Produtos: '+e.message,true);
   }
