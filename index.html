@@ -682,7 +682,7 @@ async function loadFinance(){
       rows.map(x=>[
         x.entry_date,
         x.description,
-        x.entry_type,
+       x.entry_type === 'income' ? 'Entrada' : 'Saída',
         x.category,
         money(x.amount),
         x.status
