@@ -650,16 +650,20 @@ async function loadServices(){
   try{
     const rows=await getRows('services');
 
-    table('servicesList',
+    tableWithActions(
+      'servicesList',
       ['Data','Cliente','Cultura','Área (ha)','Preço/ha','Total'],
       rows.map(x=>[
         x.service_date,
-        customers.find(c=>c.id===x.customer_id)?.name||'—',
+        customers.find(c=>String(c.id)===String(x.customer_id))?.name||'—',
         x.crop,
         x.area_hectares,
         money(x.price_per_hectare),
         money(x.total_amount)
-      ])
+      ]),
+      rows.map(x=>
+        `<button class="secondary" onclick="editService('${esc(x.id)}')">Editar</button>`
+      )
     );
   }catch(e){
     notice('Serviços: '+e.message,true);
