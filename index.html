@@ -987,17 +987,22 @@ async function loadFinance(){
     $('totalExpense').textContent=money(expense);
     $('totalBalance').textContent=money(income-expense);
 
-    table('financeList',
+    tableWithActions(
+      'financeList',
       ['Data','Descrição','Tipo','Categoria','Valor','Status'],
       rows.map(x=>[
-  x.entry_date,
-  x.description,
-  x.entry_type === 'income' ? 'Entrada' : 'Saída',
-  x.category,
-  money(x.amount),
-x.status === 'paid' ? 'Pago' : 'Pendente'
-])
+        x.entry_date,
+        x.description,
+        x.entry_type==='income'?'Entrada':'Saída',
+        x.category,
+        money(x.amount),
+        x.status==='paid'?'Pago':'Pendente'
+      ]),
+      rows.map(x=>
+        `<button class="secondary" onclick="editFinance('${esc(x.id)}')">Editar</button>`
+      )
     );
+
   }catch(e){
     notice('Financeiro: '+e.message,true);
   }
