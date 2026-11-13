@@ -468,11 +468,12 @@ async function loadProducts(){
 }
 async function editProduct(id){
   try{
-    const p=products.find(x=>x.id===id);
+    const p=products.find(x=>String(x.id)===String(id));
+
     if(!p)throw Error('Produto não encontrado.');
 
     const value=prompt(
-      'Novo custo unitário (R$):',
+      'Digite o novo custo unitário (R$):',
       p.unit_cost ?? 0
     );
 
@@ -484,17 +485,21 @@ async function editProduct(id){
       throw Error('Informe um preço válido.');
     }
 
-    const {error}=await db.from('products')
+    const {error}=await db
+      .from('products')
       .update({unit_cost:cost})
       .eq('id',id);
 
     if(error)throw error;
 
     await loadProducts();
+
     notice('Preço atualizado com sucesso!');
 
   }catch(e){
-    notice('Erro ao atualizar preço: '+e.message,true);
+    notice('Erro ao editar preço: '+e.message,true);
+  }
+}
   }
 }
 async function addProduct(){
