@@ -1,2 +1,2 @@
-# Gbs-Pulveriza-o-
+# Gbs-Pulverizacao
 Sistema de gestão financeira e estoque 
