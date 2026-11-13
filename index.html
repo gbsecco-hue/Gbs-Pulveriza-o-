@@ -343,21 +343,26 @@ async function verifyAndOpen(session){
 }
 
 async function login(){
-  $('loginBtn').disabled=true;
+  const btn = $('loginBtn');
 
-  const {data,error}=await db.auth.signInWithPassword({
-    email:$('email').value.trim(),
-    password:$('password').value
-  });
+  try {
+    btn.disabled = true;
+    msg('loginMsg', 'Entrando...', false);
 
-  $('loginBtn').disabled=false;
+    const { data, error } = await db.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('password').value
+    });
 
-  if(error){
-    msg('loginMsg',error.message,true);
-    return;
+    if(error) throw error;
+
+    await verifyAndOpen(data.session);
+
+  } catch(e) {
+    msg('loginMsg', e.message || 'Erro ao entrar. Tente novamente.', true);
+  } finally {
+    btn.disabled = false;
   }
-
-  await verifyAndOpen(data.session);
 }
 
 async function logout(){
