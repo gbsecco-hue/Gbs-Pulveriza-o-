@@ -172,5 +172,15 @@ function addServico(){
 }
 function safe(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    "https://exalxwapytuzpeuqdfxk.supabase.co",
+    "sb_publishable_215iD-LifHvi_Zu_XKJ7UQ_k6zOYNAx"
+  );
+
+  console.log("Conexão com Supabase inicializada!");
+</script>
 </body>
 </html>
