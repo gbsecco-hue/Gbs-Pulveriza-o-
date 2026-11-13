@@ -7,5 +7,13 @@
   "scope": "./",
   "display": "standalone",
   "background_color": "#f3f6f3",
-  "theme_color": "#123d27"
+  "theme_color": "#123d27",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/R1EgpGc.jpeg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
 }
