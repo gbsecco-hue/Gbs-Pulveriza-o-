@@ -694,15 +694,19 @@ async function loadMovements(){
   try{
     const rows=await getRows('stock_movements');
 
-    table('stockList',
+    tableWithActions(
+      'stockList',
       ['Data','Produto','Movimento','Quantidade','Descrição'],
       rows.map(x=>[
         x.created_at?.slice(0,10),
         products.find(p=>p.id===x.product_id)?.name||'—',
-        x.movement_type,
+        x.movement_type==='in'?'Entrada':'Saída',
         x.quantity,
         x.description
-      ])
+      ]),
+      rows.map(x=>
+        `<button class="secondary" onclick="editMovement('${esc(x.id)}')">Editar</button>`
+      )
     );
   }catch(e){
     notice('Estoque: '+e.message,true);
