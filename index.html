@@ -457,6 +457,7 @@ async function loadCustomers(){
   }catch(e){
     notice('Clientes: '+e.message,true);
   }
+  
 }
   async function editCustomer(id){
   try{
@@ -510,6 +511,40 @@ async function addCustomer(){
   }catch(e){
     notice('Erro ao salvar cliente: '+e.message,true);
   }
+  async function editCustomer(id){
+  try{
+    const c=customers.find(x=>String(x.id)===String(id));
+    if(!c)throw Error('Cliente não encontrado.');
+
+    const name=prompt('Nome do cliente:',c.name);
+    if(name===null)return;
+
+    const phone=prompt('Telefone:',c.phone||'');
+    if(phone===null)return;
+
+    const address=prompt('Endereço:',c.address||'');
+    if(address===null)return;
+
+    const notes=prompt('Observações:',c.notes||'');
+    if(notes===null)return;
+
+    if(!name.trim())throw Error('Informe o nome.');
+
+    const {error}=await db.from('customers').update({
+      name:name.trim(),
+      phone,
+      address,
+      notes
+    }).eq('id',id);
+
+    if(error)throw error;
+
+    await loadCustomers();
+    notice('Cliente atualizado com sucesso!');
+  }catch(e){
+    notice('Erro ao editar cliente: '+e.message,true);
+  }
+}
 }
 
 async function loadProducts(){
