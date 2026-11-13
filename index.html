@@ -708,10 +708,12 @@ async function loadMovements(){
         `<button class="secondary" onclick="editMovement('${esc(x.id)}')">Editar</button>`
       )
     );
-  }catch(e){
+    }catch(e){
     notice('Estoque: '+e.message,true);
   }
-  async function editMovement(id){
+}
+
+async function editMovement(id){
   try{
     const rows=await getRows('stock_movements');
     const m=rows.find(x=>String(x.id)===String(id));
