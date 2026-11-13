@@ -181,6 +181,20 @@ function safe(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
   );
 
   console.log("Conexão com Supabase inicializada!");
+ async function testarBanco() {
+  const { data, error } = await supabaseClient
+    .from("Cliente")
+    .select("id, nome, telefone")
+    .limit(1);
+
+  if (error) {
+    alert("Erro no banco: " + error.message);
+  } else {
+    alert("Conexão funcionando! Banco acessível.");
+  }
+}
+
+testarBanco();
 </script>
 </body>
 </html>
