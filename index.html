@@ -619,7 +619,7 @@ async function loadMovements(){
 async function addMovement(){
   try{
     const id=$('m_product').value;
-    const type=$('m_type').value === 'entrada' ? 'in' : 'out';
+    const type=$('m_type').value;
     const q=Number($('m_quantity').value);
 
     if(!id)throw Error('Selecione um produto.');
