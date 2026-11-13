@@ -711,6 +711,123 @@ async function loadMovements(){
   }catch(e){
     notice('Estoque: '+e.message,true);
   }
+  async function editMovement(id){
+  try{
+    const rows=await getRows('stock_movements');
+    const m=rows.find(x=>String(x.id)===String(id));
+
+    if(!m)throw Error('Movimentação não encontrada.');
+
+    const oldProduct=products.find(p=>String(p.id)===String(m.product_id));
+    if(!oldProduct)throw Error('Produto original não encontrado.');
+
+    const names=products.map(p=>p.name).join(', ');
+    const productName=prompt('Nome do produto:\n'+names,oldProduct.name);
+    if(productName===null)return;
+
+    const matches=products.filter(p=>
+      p.name.trim().toLowerCase()===productName.trim().toLowerCase()
+    );
+
+    if(matches.length!==1){
+      throw Error('Produto não encontrado ou nome duplicado.');
+    }
+
+    const newProduct=matches[0];
+
+    const type=prompt('Tipo: digite in para Entrada ou out para Saída:',m.movement_type);
+    if(type===null)return;
+    if(!['in','out'].includes(type.trim().toLowerCase())){
+      throw Error('Digite in ou out.');
+    }
+
+    const newType=type.trim().toLowerCase();
+
+    const quantityText=prompt('Quantidade:',m.quantity);
+    if(quantityText===null)return;
+    const newQuantity=Number(quantityText.replace(',','.'));
+
+    if(!Number.isFinite(newQuantity)||newQuantity<=0){
+      throw Error('Quantidade inválida.');
+    }
+
+    const description=prompt('Descrição:',m.description||'');
+    if(description===null)return;
+
+    const oldSign=m.movement_type==='in'?1:-1;
+    const newSign=newType==='in'?1:-1;
+
+    const balances={};
+    balances[m.product_id]=Number(oldProduct.current_stock||0)-(oldSign*Number(m.quantity));
+
+    const currentNewBalance=String(newProduct.id)===String(m.product_id)
+      ? balances[m.product_id]
+      : Number(newProduct.current_stock||0);
+
+    const newBalance=currentNewBalance+(newSign*newQuantity);
+
+    if(balances[m.product_id]<0||newBalance<0){
+      throw Error('Estoque insuficiente para essa alteração.');
+    }
+
+    const oldBalance=Number(oldProduct.current_stock||0);
+    const newProductOldBalance=Number(newProduct.current_stock||0);
+
+    const {error:e1}=await db.from('products')
+      .update({current_stock:balances[m.product_id]})
+      .eq('id',m.product_id);
+
+    if(e1)throw e1;
+
+    if(String(newProduct.id)!==String(m.product_id)){
+      const {error:e2}=await db.from('products')
+        .update({current_stock:newBalance})
+        .eq('id',newProduct.id);
+
+      if(e2){
+        await db.from('products')
+          .update({current_stock:oldBalance})
+          .eq('id',m.product_id);
+        throw e2;
+      }
+    }else{
+      const {error:e2}=await db.from('products')
+        .update({current_stock:newBalance})
+        .eq('id',m.product_id);
+
+      if(e2)throw e2;
+    }
+
+    const {error:e3}=await db.from('stock_movements')
+      .update({
+        product_id:newProduct.id,
+        movement_type:newType,
+        quantity:newQuantity,
+        description
+      })
+      .eq('id',id);
+
+    if(e3){
+      await db.from('products')
+        .update({current_stock:oldBalance})
+        .eq('id',m.product_id);
+
+      if(String(newProduct.id)!==String(m.product_id)){
+        await db.from('products')
+          .update({current_stock:newProductOldBalance})
+          .eq('id',newProduct.id);
+      }
+
+      throw e3;
+    }
+
+    await loadProducts();
+    await loadMovements();
+    notice('Movimentação e estoque atualizados!');
+  }catch(e){
+    notice('Erro ao editar movimentação: '+e.message,true);
+  }
+}
 }
 
 async function addMovement(){
