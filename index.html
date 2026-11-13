@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GBS Pulverização | Gestão</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f5f2;color:#202820}
+header{background:#17271e;color:white;padding:22px}
+.logo{font-size:25px;font-weight:bold;letter-spacing:2px}
+.logo span{color:#55c76b}
+header p{margin:6px 0 0;color:#c5d4c8;font-size:13px}
+nav{display:flex;gap:8px;overflow-x:auto;padding:12px;background:#fff}
+nav button{border:0;background:#edf2ed;padding:12px 16px;border-radius:8px;white-space:nowrap;font-weight:bold;color:#263b2c}
+nav button.active{background:#246b38;color:white}
+main{padding:18px;max-width:1100px;margin:auto}
+h2{margin-top:8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.card{background:white;border-radius:12px;padding:18px;box-shadow:0 2px 8px #0000000a}
+.card small{color:#68766b}
+.value{font-size:23px;font-weight:bold;margin-top:12px}
+.green{color:#238343}
+.red{color:#c34b43}
+.panel{background:white;border-radius:12px;padding:18px;margin-top:18px}
+input,select{width:100%;padding:12px;margin:7px 0 14px;border:1px solid #d8dfd8;border-radius:7px;font-size:15px}
+label{font-size:13px;font-weight:bold}
+.action{background:#246b38;color:white;border:0;padding:13px 18px;border-radius:8px;font-weight:bold;width:100%;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{text-align:left;padding:12px 7px;border-bottom:1px solid #eee}
+.hidden{display:none}
+footer{text-align:center;color:#879187;padding:25px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">G<span>B</span>S PULVERIZAÇÃO</div>
+ <p>Gestão agrícola • Financeiro • Estoque</p>
+</header>
+
+<nav>
+ <button class="active" onclick="show('inicio',this)">Início</button>
+ <button onclick="show('clientes',this)">Clientes</button>
+ <button onclick="show('financeiro',this)">Financeiro</button>
+ <button onclick="show('estoque',this)">Estoque</button>
+ <button onclick="show('servicos',this)">Serviços</button>
+</nav>
+
+<main>
+<section id="inicio">
+<h2>Painel de controle</h2>
+<p>Visão geral da sua empresa</p>
+<div class="cards">
+ <div class="card"><small>Receitas</small><div class="value green" id="receitas">R$ 0,00</div></div>
+ <div class="card"><small>Despesas</small><div class="value red" id="despesas">R$ 0,00</div></div>
+ <div class="card"><small>Saldo</small><div class="value" id="saldo">R$ 0,00</div></div>
+ <div class="card"><small>Clientes cadastrados</small><div class="value" id="totalClientes">0</div></div>
+</div>
+<div class="panel">
+<h3>Últimos lançamentos</h3>
+<div id="ultimos">Nenhum lançamento realizado.</div>
+</div>
+</section>
+
+<section id="clientes" class="hidden">
+<h2>Cadastro de clientes</h2>
+<div class="panel">
+<label>Nome do cliente</label>
+<input id="nomeCliente" placeholder="Nome completo">
+<label>Telefone</label>
+<input id="telefone" placeholder="(54) 99999-9999">
+<label>Localidade</label>
+<input id="localidade" placeholder="Cidade ou propriedade">
+<button class="action" onclick="addCliente()">Cadastrar cliente</button>
+</div>
+<div class="panel"><h3>Clientes cadastrados</h3><div id="listaClientes">Nenhum cliente.</div></div>
+</section>
+
+<section id="financeiro" class="hidden">
+<h2>Controle financeiro</h2>
+<div class="panel">
+<label>Descrição</label>
+<input id="descricao" placeholder="Ex.: Pulverização de soja">
+<label>Tipo de lançamento</label>
+<select id="tipo"><option value="entrada">Entrada</option><option value="saida">Despesa</option></select>
+<label>Valor (R$)</label>
+<input id="valor" type="number" step="0.01" placeholder="0,00">
+<button class="action" onclick="addLancamento()">Salvar lançamento</button>
+</div>
+<div class="panel"><h3>Histórico financeiro</h3><div id="historico">Nenhum lançamento.</div></div>
+</section>
+
+<section id="estoque" class="hidden">
+<h2>Controle de estoque</h2>
+<div class="panel">
+<label>Nome do produto</label>
+<input id="produto" placeholder="Nome do produto agrícola">
+<label>Categoria</label>
+<select id="categoria"><option>Produto agrícola</option><option>Adjuvante</option><option>Outros</option></select>
+<label>Quantidade</label>
+<input id="quantidade" type="number" step="0.01" placeholder="Quantidade">
+<label>Unidade</label>
+<select id="unidade"><option>L</option><option>Kg</option><option>Unidade</option><option>Galão</option></select>
+<button class="action" onclick="addProduto()">Adicionar ao estoque</button>
+</div>
+<div class="panel"><h3>Produtos cadastrados</h3><div id="listaProdutos">Nenhum produto.</div></div>
+</section>
+
+<section id="servicos" class="hidden">
+<h2>Serviços agrícolas</h2>
+<div class="panel">
+<label>Cliente</label>
+<input id="clienteServico" placeholder="Nome do cliente">
+<label>Tipo de serviço</label>
+<input id="tipoServico" placeholder="Ex.: Pulverização em parreiral">
+<label>Hectares</label>
+<input id="hectares" type="number" step="0.01" placeholder="0">
+<label>Valor por hectare (R$)</label>
+<input id="precoHa" type="number" step="0.01" placeholder="0,00">
+<button class="action" onclick="addServico()">Registrar serviço</button>
+</div>
+<div class="panel"><h3>Histórico de serviços</h3><div id="listaServicos">Nenhum serviço.</div></div>
+</section>
+</main>
+
+<footer>GBS Pulverização • Sistema de gestão</footer>
+
+<script>
+let clientes=[],lancamentos=[],produtos=[],servicos=[];
+const dinheiro=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function show(id,btn){
+ document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+ document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
+}
+function addCliente(){
+ let n=document.getElementById('nomeCliente').value.trim();
+ if(!n)return alert('Informe o nome do cliente.');
+ clientes.push({n,t:telefone.value,l:localidade.value});
+ document.getElementById('listaClientes').innerHTML=clientes.map(c=>`<p><b>${safe(c.n)}</b> — ${safe(c.t)}<br>${safe(c.l)}</p>`).join('');
+ document.getElementById('totalClientes').textContent=clientes.length;
+ nomeCliente.value='';telefone.value='';localidade.value='';
+}
+function addLancamento(){
+ let d=descricao.value.trim(),v=Number(valor.value),t=tipo.value;
+ if(!d||v<=0)return alert('Preencha descrição e valor.');
+ lancamentos.push({d,v,t});
+ document.getElementById('historico').innerHTML=lancamentos.map(x=>`<p>${safe(x.d)} — ${x.t==='entrada'?'Entrada':'Despesa'}: ${dinheiro(x.v)}</p>`).join('');
+ atualizar();descricao.value='';valor.value='';
+}
+function atualizar(){
+ let e=lancamentos.filter(x=>x.t==='entrada').reduce((a,x)=>a+x.v,0);
+ let s=lancamentos.filter(x=>x.t==='saida').reduce((a,x)=>a+x.v,0);
+ receitas.textContent=dinheiro(e);despesas.textContent=dinheiro(s);saldo.textContent=dinheiro(e-s);
+ document.getElementById('ultimos').innerHTML=lancamentos.length?lancamentos.slice(-5).reverse().map(x=>`<p>${safe(x.d)} — ${dinheiro(x.v)}</p>`).join(''):'Nenhum lançamento realizado.';
+}
+function addProduto(){
+ let n=produto.value.trim(),q=Number(quantidade.value);
+ if(!n||q<=0)return alert('Informe produto e quantidade.');
+ produtos.push({n,q,u:unidade.value,c:categoria.value});
+ document.getElementById('listaProdutos').innerHTML=produtos.map(x=>`<p><b>${safe(x.n)}</b> — ${x.q} ${x.u} (${safe(x.c)})</p>`).join('');
+ produto.value='';quantidade.value='';
+}
+function addServico(){
+ let c=clienteServico.value.trim(),t=tipoServico.value.trim(),h=Number(hectares.value),p=Number(precoHa.value);
+ if(!c||!t||h<=0||p<=0)return alert('Preencha todos os campos.');
+ servicos.push({c,t,h,p});
+ document.getElementById('listaServicos').innerHTML=servicos.map(x=>`<p>${safe(x.c)} — ${safe(x.t)}<br>${x.h} ha × ${dinheiro(x.p)} = <b>${dinheiro(x.h*x.p)}</b></p>`).join('');
+ clienteServico.value='';tipoServico.value='';hectares.value='';precoHa.value='';
+}
+function safe(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+</body>
+</html>
