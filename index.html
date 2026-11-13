@@ -1007,7 +1007,70 @@ async function loadFinance(){
     notice('Financeiro: '+e.message,true);
   }
 }
+async function editFinance(id){
+  try{
+    const rows=await getRows('financial_entries');
+    const f=rows.find(x=>String(x.id)===String(id));
 
+    if(!f)throw Error('Lançamento não encontrado.');
+
+    const description=prompt('Descrição:',f.description);
+    if(description===null)return;
+
+    const amountText=prompt('Valor (R$):',f.amount);
+    if(amountText===null)return;
+
+    const amount=Number(amountText.replace(',','.'));
+    if(!Number.isFinite(amount)||amount<=0){
+      throw Error('Informe um valor válido.');
+    }
+
+    const type=prompt(
+      'Tipo: digite Entrada ou Saída',
+      f.entry_type==='income'?'Entrada':'Saída'
+    );
+    if(type===null)return;
+
+    const entryType=type.trim().toLowerCase()==='entrada'?'income':
+      type.trim().toLowerCase()==='saída'?'expense':null;
+
+    if(!entryType)throw Error('Digite Entrada ou Saída.');
+
+    const date=prompt('Data (AAAA-MM-DD):',f.entry_date);
+    if(date===null)return;
+
+    const category=prompt('Categoria:',f.category||'');
+    if(category===null)return;
+
+    const status=prompt(
+      'Status: digite Pago ou Pendente',
+      f.status==='paid'?'Pago':'Pendente'
+    );
+    if(status===null)return;
+
+    const paymentStatus=status.trim().toLowerCase()==='pago'?'paid':
+      status.trim().toLowerCase()==='pendente'?'pending':null;
+
+    if(!paymentStatus)throw Error('Digite Pago ou Pendente.');
+
+    const {error}=await db.from('financial_entries').update({
+      description:description.trim(),
+      amount,
+      entry_type:entryType,
+      entry_date:date,
+      category,
+      status:paymentStatus
+    }).eq('id',id);
+
+    if(error)throw error;
+
+    await loadFinance();
+    notice('Lançamento atualizado com sucesso!');
+
+  }catch(e){
+    notice('Erro ao editar lançamento: '+e.message,true);
+  }
+}
 async function addFinance(){
   try{
     const description=$('f_description').value.trim();
