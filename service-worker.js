@@ -17,3 +17,9 @@ self.addEventListener('activate', event => {
     ])
   );
 });
+
+self.addEventListener('fetch', event => {
+  if (new URL(event.request.url).origin === self.location.origin) {
+    event.respondWith(fetch(event.request));
+  }
+});
