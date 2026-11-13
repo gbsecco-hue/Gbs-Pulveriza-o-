@@ -685,7 +685,7 @@ async function loadFinance(){
   x.entry_type === 'income' ? 'Entrada' : 'Saída',
   x.category,
   money(x.amount),
-x.status === 'paid' ? 'Pago' : 'Pendente''
+x.status === 'paid' ? 'Pago' : 'Pendente'
 ])
     );
   }catch(e){
