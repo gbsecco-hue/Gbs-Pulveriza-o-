@@ -412,6 +412,19 @@ function table(id,heads,rows){
     rows.map(r=>'<tr>'+r.map(x=>'<td>'+esc(x)+'</td>').join('')+'</tr>').join('')+
     '</tbody></table>';
 }
+  function tableWithActions(id,heads,rows,actions){
+  $(id).innerHTML=
+    '<table><thead><tr>'+
+    heads.map(x=>'<th>'+esc(x)+'</th>').join('')+
+    '<th>Ações</th></tr></thead><tbody>'+
+    rows.map((r,i)=>
+      '<tr>'+
+      r.map(x=>'<td>'+esc(x)+'</td>').join('')+
+      '<td>'+actions[i]+'</td>'+
+      '</tr>'
+    ).join('')+
+    '</tbody></table>';
+}
 
 async function startApp(){
   try{
@@ -433,10 +446,50 @@ async function loadCustomers(){
       '<option value="">Selecione</option>'+
       customers.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
 
-    table('customersList',['Nome','Telefone','Endereço'],
-      customers.map(x=>[x.name,x.phone,x.address]));
+    tableWithActions(
+      'customersList',
+      ['Nome','Telefone','Endereço'],
+      customers.map(x=>[x.name,x.phone,x.address]),
+      customers.map(x=>
+        `<button class="secondary" onclick="editCustomer('${esc(x.id)}')">Editar</button>`
+      )
+    );
   }catch(e){
     notice('Clientes: '+e.message,true);
+  }
+}
+  async function editCustomer(id){
+  try{
+    const c=customers.find(x=>String(x.id)===String(id));
+    if(!c)throw Error('Cliente não encontrado.');
+
+    const name=prompt('Nome do cliente:',c.name);
+    if(name===null)return;
+
+    const phone=prompt('Telefone:',c.phone||'');
+    if(phone===null)return;
+
+    const address=prompt('Endereço:',c.address||'');
+    if(address===null)return;
+
+    const notes=prompt('Observações:',c.notes||'');
+    if(notes===null)return;
+
+    if(!name.trim())throw Error('Informe o nome.');
+
+    const {error}=await db.from('customers').update({
+      name:name.trim(),
+      phone,
+      address,
+      notes
+    }).eq('id',id);
+
+    if(error)throw error;
+
+    await loadCustomers();
+    notice('Cliente atualizado com sucesso!');
+  }catch(e){
+    notice('Erro ao editar cliente: '+e.message,true);
   }
 }
 
