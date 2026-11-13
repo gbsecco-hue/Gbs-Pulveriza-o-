@@ -16,7 +16,7 @@
       "purpose": "any"
     },
     {
-      "src": "./gbs-512.png",
+      "src": "./gbs-512.png.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
