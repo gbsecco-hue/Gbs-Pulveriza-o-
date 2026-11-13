@@ -669,7 +669,98 @@ async function loadServices(){
     notice('Serviços: '+e.message,true);
   }
 }
+async function editService(id){
+  try{
+    const rows=await getRows('services');
+    const s=rows.find(x=>String(x.id)===String(id));
 
+    if(!s)throw Error('Serviço não encontrado.');
+
+    const customer=customers.find(c=>String(c.id)===String(s.customer_id));
+
+    const customerName=prompt(
+      'Nome do cliente:',
+      customer?.name||''
+    );
+    if(customerName===null)return;
+
+    const customerMatch=customers.filter(c=>
+      c.name.trim().toLowerCase()===customerName.trim().toLowerCase()
+    );
+
+    if(customerMatch.length!==1){
+      throw Error('Cliente não encontrado ou nome duplicado.');
+    }
+
+    const date=prompt('Data (AAAA-MM-DD):',s.service_date);
+    if(date===null)return;
+
+    const crop=prompt('Cultura:',s.crop||'');
+    if(crop===null)return;
+
+    const areaText=prompt('Área em hectares:',s.area_hectares);
+    if(areaText===null)return;
+
+    const area=Number(areaText.replace(',','.'));
+    if(!Number.isFinite(area)||area<=0){
+      throw Error('Área inválida.');
+    }
+
+    const product=products.find(p=>String(p.id)===String(s.product_id));
+
+    const productName=prompt(
+      'Produto (deixe vazio se não houver):',
+      product?.name||''
+    );
+    if(productName===null)return;
+
+    let productId=null;
+
+    if(productName.trim()){
+      const productMatch=products.filter(p=>
+        p.name.trim().toLowerCase()===productName.trim().toLowerCase()
+      );
+
+      if(productMatch.length!==1){
+        throw Error('Produto não encontrado ou nome duplicado.');
+      }
+
+      productId=productMatch[0].id;
+    }
+
+    const priceText=prompt(
+      'Preço por hectare (R$):',
+      s.price_per_hectare
+    );
+    if(priceText===null)return;
+
+    const price=Number(priceText.replace(',','.'));
+    if(!Number.isFinite(price)||price<0){
+      throw Error('Preço inválido.');
+    }
+
+    const notes=prompt('Observações:',s.notes||'');
+    if(notes===null)return;
+
+    const {error}=await db.from('services').update({
+      customer_id:customerMatch[0].id,
+      service_date:date,
+      crop,
+      area_hectares:area,
+      product_id:productId,
+      price_per_hectare:price,
+      notes
+    }).eq('id',id);
+
+    if(error)throw error;
+
+    await loadServices();
+    notice('Serviço atualizado com sucesso!');
+
+  }catch(e){
+    notice('Erro ao editar serviço: '+e.message,true);
+  }
+}
 async function addService(){
   try{
     const area=Number($('s_area').value||0);
