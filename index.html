@@ -658,10 +658,26 @@ async function addMovement(){
     notice('Estoque: '+e.message,true);
   }
 }
-
+  
 async function loadFinance(){
   try{
     const rows=await getRows('financial_entries');
+
+    const paid=rows.filter(x=>x.status==='paid');
+
+    const income=paid
+      .filter(x=>x.entry_type==='income')
+      .reduce((total,x)=>total+Number(x.amount||0),0);
+
+    const expense=paid
+      .filter(x=>x.entry_type==='expense')
+      .reduce((total,x)=>total+Number(x.amount||0),0);
+
+    const balance=income-expense;
+
+    $('totalIncome').textContent=money(income);
+    $('totalExpense').textContent=money(expense);
+    $('totalBalance').textContent=money(balance);
 
     table('financeList',
       ['Data','Descrição','Tipo','Categoria','Valor','Status'],
@@ -674,31 +690,7 @@ async function loadFinance(){
         x.status
       ])
     );
-  }catch(e){
-    notice('Financeiro: '+e.message,true);
-  }
-}
 
-async function addFinance(){
-  try{
-    const description=$('f_description').value.trim();
-    const amount=Number($('f_amount').value);
-
-    if(!description||amount<=0){
-      throw Error('Informe descrição e valor válido.');
-    }
-
-    await insert('financial_entries',{
-      description,
-      amount,
-      entry_type:$('f_type').value,
-      entry_date:$('f_date').value||today,
-      category:$('f_category').value,
-      status:$('f_status').value
-    });
-
-    ['f_description','f_amount','f_category'].forEach(i=>$(i).value='');
-    await loadFinance();
   }catch(e){
     notice('Financeiro: '+e.message,true);
   }
