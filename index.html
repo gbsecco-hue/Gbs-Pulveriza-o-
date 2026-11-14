@@ -645,7 +645,7 @@ function calcTotal(){
 
 $('s_area').addEventListener('input',calcTotal);
 $('s_price').addEventListener('input',calcTotal);
-
+  
 async function loadServices(){
   try{
     const rows=await getRows('services');
@@ -662,7 +662,8 @@ async function loadServices(){
         money(x.total_amount)
       ]),
       rows.map(x=>
-        `<button class="secondary" onclick="editService('${esc(x.id)}')">Editar</button>`
+        `<button class="secondary" onclick="editService('${esc(x.id)}')">Editar</button>
+         <button class="secondary" onclick="deleteService('${esc(x.id)}')">Excluir</button>`
       )
     );
   }catch(e){
@@ -761,6 +762,28 @@ async function editService(id){
     notice('Erro ao editar serviço: '+e.message,true);
   }
 }
+  async function deleteService(id){
+  try{
+    const confirmDelete=confirm(
+      'Tem certeza que deseja excluir este serviço?'
+    );
+
+    if(!confirmDelete)return;
+
+    const {error}=await db
+      .from('services')
+      .delete()
+      .eq('id',id);
+
+    if(error)throw error;
+
+    await loadServices();
+    notice('Serviço excluído com sucesso!');
+
+  }catch(e){
+    notice('Erro ao excluir serviço: '+e.message,true);
+  }
+  }
 async function addService(){
   try{
     const area=Number($('s_area').value||0);
