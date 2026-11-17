@@ -547,6 +547,7 @@ async function startApp(){
     await loadServices();
     await loadMovements();
     await loadFinance();
+    await loadDashboard();
   }catch(e){
     notice('Erro ao carregar: '+e.message,true);
   }
