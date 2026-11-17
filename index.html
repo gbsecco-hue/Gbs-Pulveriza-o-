@@ -672,33 +672,48 @@ async function deleteProduct(id){
     const p=products.find(x=>String(x.id)===String(id));
     if(!p)throw Error('Produto não encontrado.');
 
-    if(!confirm(
-      `Excluir definitivamente "${p.name}" e TODAS as movimentações vinculadas a ele? Essa ação não poderá ser desfeita.`
-    ))return;
+    if(!confirm(`Excluir ${p.name} e suas movimentações?`))return;
 
-    const {error:movementError}=await db
+    const {data:deleted,error:deleteError}=await db
       .from('stock_movements')
       .delete()
+      .eq('product_id',id)
+      .select('id');
+
+    if(deleteError)throw deleteError;
+
+    console.log('Movimentações excluídas:',deleted);
+
+    const {data:remaining,error:checkError}=await db
+      .from('stock_movements')
+      .select('id')
       .eq('product_id',id);
 
-    if(movementError)throw movementError;
+    if(checkError)throw checkError;
 
-    const {error:productError}=await db
+    if(remaining && remaining.length>0){
+      throw Error(
+        `Ainda existem ${remaining.length} movimentações vinculadas. Verifique as permissões do Supabase.`
+      );
+    }
+
+    const {error}=await db
       .from('products')
       .delete()
       .eq('id',id);
 
-    if(productError)throw productError;
+    if(error)throw error;
 
     await loadProducts();
     await loadDashboard();
 
-    notice('Produto e movimentações excluídos com sucesso!');
+    notice('Produto excluído!');
 
   }catch(e){
     notice('Erro ao excluir produto: '+e.message,true);
   }
-}
+}  
+  
 async function addProduct(){
   try{
     const name=$('p_name').value.trim();
