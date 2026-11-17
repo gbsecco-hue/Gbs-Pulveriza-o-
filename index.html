@@ -672,25 +672,33 @@ async function deleteProduct(id){
     const p=products.find(x=>String(x.id)===String(id));
     if(!p)throw Error('Produto não encontrado.');
 
-    if(!confirm(`Deseja realmente excluir "${p.name}"?`))return;
+    if(!confirm(
+      `Excluir definitivamente "${p.name}" e TODAS as movimentações vinculadas a ele? Essa ação não poderá ser desfeita.`
+    ))return;
 
-    const {error}=await db
+    const {error:movementError}=await db
+      .from('stock_movements')
+      .delete()
+      .eq('product_id',id);
+
+    if(movementError)throw movementError;
+
+    const {error:productError}=await db
       .from('products')
       .delete()
       .eq('id',id);
 
-    if(error)throw error;
+    if(productError)throw productError;
 
     await loadProducts();
     await loadDashboard();
 
-    notice('Produto excluído com sucesso!');
+    notice('Produto e movimentações excluídos com sucesso!');
 
   }catch(e){
     notice('Erro ao excluir produto: '+e.message,true);
   }
 }
-
 async function addProduct(){
   try{
     const name=$('p_name').value.trim();
