@@ -664,6 +664,35 @@ async function loadProducts(){
   }
 }
 async function editProduct(id){
+  
+async function deleteProduct(id){
+  try{
+    const p=products.find(x=>String(x.id)===String(id));
+
+    if(!p)throw Error('Produto não encontrado.');
+
+    const confirmar=confirm(
+      `Tem certeza que deseja excluir o produto "${p.name}"?`
+    );
+
+    if(!confirmar)return;
+
+    const {error}=await db
+      .from('products')
+      .delete()
+      .eq('id',id);
+
+    if(error)throw error;
+
+    await loadProducts();
+
+    notice('Produto excluído com sucesso!');
+
+  }catch(e){
+    notice('Erro ao excluir produto: '+e.message,true);
+  }
+}
+
   try{
     const p=products.find(x=>String(x.id)===String(id));
 
