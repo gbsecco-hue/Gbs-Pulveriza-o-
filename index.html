@@ -663,19 +663,82 @@ async function loadProducts(){
     notice('Produtos: '+e.message,true);
   }
 }
+
+async function loadProducts(){
+  try{
+    products=await getRows('products');
+
+    const o='<option value="">Selecione</option>'+
+      products.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+
+    $('s_product').innerHTML=o;
+    $('m_product').innerHTML=o;
+
+    $('productsList').innerHTML=
+      '<table><thead><tr>'+
+      ['Produto','Categoria','Unidade','Estoque','Mínimo','Custo unitário','Ações']
+      .map(x=>'<th>'+x+'</th>').join('')+
+      '</tr></thead><tbody>'+
+      products.map(x=>`<tr>
+        <td>${esc(x.name)}</td>
+        <td>${esc(x.category)}</td>
+        <td>${esc(x.unit)}</td>
+        <td>${esc(x.current_stock)}</td>
+        <td>${esc(x.minimum_stock)}</td>
+        <td>${money(x.unit_cost)}</td>
+        <td>
+          <button class="secondary" onclick="editProduct('${esc(x.id)}')">Editar</button>
+          <button class="secondary" onclick="deleteProduct('${esc(x.id)}')">Excluir</button>
+        </td>
+      </tr>`).join('')+
+      '</tbody></table>';
+
+  }catch(e){
+    notice('Produtos: '+e.message,true);
+  }
+}
+
 async function editProduct(id){
-  
+  try{
+    const p=products.find(x=>String(x.id)===String(id));
+
+    if(!p)throw Error('Produto não encontrado.');
+
+    const value=prompt(
+      'Digite o novo custo unitário (R$):',
+      p.unit_cost ?? 0
+    );
+
+    if(value===null)return;
+
+    const cost=Number(value.replace(',','.'));
+
+    if(!Number.isFinite(cost)||cost<0){
+      throw Error('Informe um preço válido.');
+    }
+
+    const {error}=await db
+      .from('products')
+      .update({unit_cost:cost})
+      .eq('id',id);
+
+    if(error)throw error;
+
+    await loadProducts();
+    notice('Preço atualizado com sucesso!');
+
+  }catch(e){
+    notice('Erro ao editar preço: '+e.message,true);
+  }
+}
+
 async function deleteProduct(id){
   try{
     const p=products.find(x=>String(x.id)===String(id));
 
     if(!p)throw Error('Produto não encontrado.');
 
-    const confirmar=confirm(
-      `Tem certeza que deseja excluir o produto "${p.name}"?`
-    );
-
-    if(!confirmar)return;
+    if(!confirm(`Deseja realmente excluir "${p.name}"?`))return;
 
     const {error}=await db
       .from('products')
@@ -685,13 +748,13 @@ async function deleteProduct(id){
     if(error)throw error;
 
     await loadProducts();
-
     notice('Produto excluído com sucesso!');
 
   }catch(e){
     notice('Erro ao excluir produto: '+e.message,true);
   }
 }
+
 
   try{
     const p=products.find(x=>String(x.id)===String(id));
