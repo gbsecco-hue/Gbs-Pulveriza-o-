@@ -524,6 +524,7 @@ async function loadDashboard(){
     notice('Erro ao atualizar painel: ' + e.message,true);
   }
 }
+
 async function loadCustomers(){
   try{
     customers=await getRows('customers');
@@ -543,9 +544,9 @@ async function loadCustomers(){
   }catch(e){
     notice('Clientes: '+e.message,true);
   }
-  
 }
-  async function editCustomer(id){
+
+async function editCustomer(id){
   try{
     const c=customers.find(x=>String(x.id)===String(id));
     if(!c)throw Error('Cliente não encontrado.');
@@ -597,71 +598,6 @@ async function addCustomer(){
   }catch(e){
     notice('Erro ao salvar cliente: '+e.message,true);
   }
-  async function editCustomer(id){
-  try{
-    const c=customers.find(x=>String(x.id)===String(id));
-    if(!c)throw Error('Cliente não encontrado.');
-
-    const name=prompt('Nome do cliente:',c.name);
-    if(name===null)return;
-
-    const phone=prompt('Telefone:',c.phone||'');
-    if(phone===null)return;
-
-    const address=prompt('Endereço:',c.address||'');
-    if(address===null)return;
-
-    const notes=prompt('Observações:',c.notes||'');
-    if(notes===null)return;
-
-    if(!name.trim())throw Error('Informe o nome.');
-
-    const {error}=await db.from('customers').update({
-      name:name.trim(),
-      phone,
-      address,
-      notes
-    }).eq('id',id);
-
-    if(error)throw error;
-
-    await loadCustomers();
-    notice('Cliente atualizado com sucesso!');
-  }catch(e){
-    notice('Erro ao editar cliente: '+e.message,true);
-  }
-}
-}
-
-async function loadProducts(){
-  try{
-    products=await getRows('products');
-
-    const o='<option value="">Selecione</option>'+
-      products.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
-
-    $('s_product').innerHTML=o;
-    $('m_product').innerHTML=o;
-
-    $('productsList').innerHTML=
-      '<table><thead><tr>'+
-      ['Produto','Categoria','Unidade','Estoque','Mínimo','Custo unitário','Ações']
-      .map(x=>'<th>'+x+'</th>').join('')+
-      '</tr></thead><tbody>'+
-      products.map(x=>`<tr>
-        <td>${esc(x.name)}</td>
-        <td>${esc(x.category)}</td>
-        <td>${esc(x.unit)}</td>
-        <td>${esc(x.current_stock)}</td>
-        <td>${esc(x.minimum_stock)}</td>
-        <td>${money(x.unit_cost)}</td>
-        <td><button class="secondary" onclick="editProduct('${x.id}')">Editar</button></td>
-      </tr>`).join('')+
-      '</tbody></table>';
-
-  }catch(e){
-    notice('Produtos: '+e.message,true);
-  }
 }
 
 async function loadProducts(){
@@ -701,7 +637,6 @@ async function loadProducts(){
 async function editProduct(id){
   try{
     const p=products.find(x=>String(x.id)===String(id));
-
     if(!p)throw Error('Produto não encontrado.');
 
     const value=prompt(
@@ -735,7 +670,6 @@ async function editProduct(id){
 async function deleteProduct(id){
   try{
     const p=products.find(x=>String(x.id)===String(id));
-
     if(!p)throw Error('Produto não encontrado.');
 
     if(!confirm(`Deseja realmente excluir "${p.name}"?`))return;
@@ -748,45 +682,12 @@ async function deleteProduct(id){
     if(error)throw error;
 
     await loadProducts();
+    await loadDashboard();
+
     notice('Produto excluído com sucesso!');
 
   }catch(e){
     notice('Erro ao excluir produto: '+e.message,true);
-  }
-}
-
-
-  try{
-    const p=products.find(x=>String(x.id)===String(id));
-
-    if(!p)throw Error('Produto não encontrado.');
-
-    const value=prompt(
-      'Digite o novo custo unitário (R$):',
-      p.unit_cost ?? 0
-    );
-
-    if(value===null)return;
-
-    const cost=Number(value.replace(',','.'));
-
-    if(!Number.isFinite(cost)||cost<0){
-      throw Error('Informe um preço válido.');
-    }
-
-    const {error}=await db
-      .from('products')
-      .update({unit_cost:cost})
-      .eq('id',id);
-
-    if(error)throw error;
-
-    await loadProducts();
-
-    notice('Preço atualizado com sucesso!');
-
-  }catch(e){
-    notice('Erro ao editar preço: '+e.message,true);
   }
 }
 
@@ -805,8 +706,11 @@ async function addProduct(){
       notes:$('p_notes').value
     });
 
-    ['p_name','p_category','p_unit','p_notes'].forEach(i=>$(i).value='');
+    ['p_name','p_unit','p_notes'].forEach(i=>$(i).value='');
+
     await loadProducts();
+    await loadDashboard();
+
   }catch(e){
     notice('Erro ao salvar produto: '+e.message,true);
   }
