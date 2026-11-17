@@ -551,7 +551,35 @@ async function startApp(){
     notice('Erro ao carregar: '+e.message,true);
   }
 }
+async function loadDashboard(){
+  try{
+    const services = await getRows('services');
+    const finance = await getRows('financial_entries');
 
+    const lowStock = products.filter(p =>
+      Number(p.current_stock || 0) <= Number(p.minimum_stock || 0)
+    );
+
+    const paid = finance.filter(x => x.status === 'paid');
+
+    const income = paid
+      .filter(x => x.entry_type === 'income')
+      .reduce((sum,x) => sum + Number(x.amount || 0),0);
+
+    const expense = paid
+      .filter(x => x.entry_type === 'expense')
+      .reduce((sum,x) => sum + Number(x.amount || 0),0);
+
+    $('dashCustomers').textContent = customers.length;
+    $('dashProducts').textContent = products.length;
+    $('dashServices').textContent = services.length;
+    $('dashLowStock').textContent = lowStock.length;
+    $('dashBalance').textContent = money(income - expense);
+
+  }catch(e){
+    notice('Erro ao atualizar painel: ' + e.message,true);
+  }
+}
 async function loadCustomers(){
   try{
     customers=await getRows('customers');
